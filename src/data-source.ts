@@ -1,5 +1,8 @@
 import { DataSource } from 'typeorm';
 import { User } from './models/User';
+import { Role } from './models/Role';
+import { AuthToken } from './models/AuthToken';
+import { Permission } from './models/Permission';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -10,7 +13,7 @@ export const AppDataSource = new DataSource({
   database: process.env.DB_DATABASE,
   synchronize: true,
   logging: true,
-  entities: [User],
+  entities: [User, Role, Permission, AuthToken],
   subscribers: [],
-  migrations: [],
+  migrations: ['src/database/migrations/*.ts'],
 }); 

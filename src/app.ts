@@ -1,4 +1,4 @@
-import { routes } from './routes';
+import router from './routes';
 import { AppDataSource } from './data-source.ts';
 import { readFileSync } from 'fs';
 import { join } from 'path';
@@ -10,7 +10,6 @@ AppDataSource.initialize()
       port: parseInt(process.env.PORT || '3000'),
       async fetch(req: Request) {
         const url = new URL(req.url);
-        const pathname = url.pathname as keyof typeof routes;
         
         // Serve Swagger UI
         if (url.pathname === '/api-docs') {
@@ -34,27 +33,7 @@ AppDataSource.initialize()
           }
 
         // Handle API routes
-        const route = routes[pathname];
-        if (route) {
-          switch (req.method) {
-            case 'GET':
-              const getData = await route.GET();
-              return new Response(JSON.stringify(getData), {
-                headers: { 'Content-Type': 'application/json' },
-              });
-            case 'POST':
-              const body = await req.json();
-              const postData = await route.POST(body as any);
-              return new Response(JSON.stringify(postData), {
-                headers: { 'Content-Type': 'application/json' },
-                status: 201,
-              });
-            default:
-              return new Response('Method Not Allowed', { status: 405 });
-          }
-        } else {
-          return new Response('Not Found', { status: 404 });
-        }
+        return router.match(req);
       },
     });
 
