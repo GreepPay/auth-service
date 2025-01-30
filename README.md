@@ -81,7 +81,7 @@ Before running the project, ensure you have the following installed:
 /src
   /config          # Configuration files (e.g., Swagger, TypeORM)
   /controllers     # Controllers to handle requests
-  /helpers         # Utility and helper functions
+  /common         # Utility and helper functions
   /models          # Database models (TypeORM entities)
   /routes          # API route definitions
   /services        # Business logic and service layers
