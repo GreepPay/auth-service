@@ -1,8 +1,13 @@
-import { DataSource } from 'typeorm';
-import { User } from './models/User';
-import { Role } from './models/Role';
-import { AuthToken } from './models/AuthToken';
-import { Permission } from './models/Permission';
+import 'reflect-metadata';
+import pkg from 'typeorm';
+const { DataSource } = pkg;
+// import { User } from './models/User';
+// import { Role } from './models/Role';
+// import { AuthToken } from './models/AuthToken';
+// import { Permission } from './models/Permission';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -13,7 +18,7 @@ export const AppDataSource = new DataSource({
   database: process.env.DB_DATABASE,
   synchronize: true,
   logging: true,
-  entities: [User, Role, Permission, AuthToken],
+  // entities: [User, Role, Permission, AuthToken],
   subscribers: [],
   migrations: ['src/database/migrations/*.ts'],
 }); 

@@ -1,5 +1,6 @@
 import type { MigrationInterface, QueryRunner } from "typeorm";
-import { Table } from "typeorm/browser";
+import pkg from 'typeorm';
+const { Table } = pkg;
 
 export class CreateAuthTokenTable1738245069048 implements MigrationInterface {
 
