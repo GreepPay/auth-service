@@ -65,7 +65,8 @@ jobs:
             earthly --no-cache +setup --envs=${{ github.ref_name }}
 
             az acr login --name ${{ secrets.AZURE_REGISTRY_NAME }}
-            earthly --push +build --envs=${{ github.ref_name }} --version=${{ github.run_number }}  --apptype="bunjs" --service="greep-auth" && \
+
+            earthly --push +build --envs=${{ github.ref_name }} --version=${{ github.run_number }}  --apptype="bunjs" --service="greep-auth"
 
             # Deploy using the EARTHLY_BUILD_ARGS
             earthly --no-cache +deploy --envs=${{ github.ref_name }} --version=${{ github.run_number }}  --apptype="bunjs" --service="greep-auth"
@@ -129,7 +130,7 @@ jobs:
 
             az acr login --name ${{ secrets.AZURE_REGISTRY_NAME }}
 
-            earthly --push +build --envs=${{ github.ref_name }} --version=${{ github.run_number }} --apptype="bunjs" --service="greep-auth" && \
+            earthly --push +build --envs=${{ github.ref_name }} --version=${{ github.run_number }} --apptype="bunjs" --service="greep-auth" || exit 1
 
             # Deploy using the EARTHLY_BUILD_ARGS
             earthly --no-cache +deploy --envs=${{ github.ref_name }} --version=${{ github.run_number }}  --apptype="bunjs" --service="greep-auth"
