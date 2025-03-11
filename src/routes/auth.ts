@@ -1,7 +1,14 @@
-import { AuthenticationController } from '../controllers/AuthenticationController';
-import router, { type BunRequest } from './router';
+import { AuthenticationController } from "../controllers/AuthenticationController";
+import router, { type BunRequest } from "./router";
+import {
+  type CreateUserForm,
+  type ResetPasswordForm,
+  type ValidateOtpForm,
+  type UpdateUserProfileForm,
+  type AuthenticateUserForm,
+} from "../forms/authentication";
 
-const APP_VERSION = 'v1';
+const APP_VERSION = "v1";
 
 /**
  * @swagger
@@ -17,13 +24,13 @@ const APP_VERSION = 'v1';
  *       401:
  *         description: Unauthorized - User not authenticated
  */
-router.add('GET', `/${APP_VERSION}/auth/me`, async (request: BunRequest) => {
-    const result = await new AuthenticationController().getAuthUser(request);
+router.add("GET", `/${APP_VERSION}/auth/me`, async (request: BunRequest) => {
+  const result = await new AuthenticationController().getAuthUser(request);
 
-    return new Response(JSON.stringify(result.body), {
-        headers: { 'Content-Type': 'application/json' },
-        status: result.statusCode
-    });
+  return new Response(JSON.stringify(result.body), {
+    headers: { "Content-Type": "application/json" },
+    status: result.statusCode,
+  });
 });
 
 /**
@@ -39,25 +46,24 @@ router.add('GET', `/${APP_VERSION}/auth/me`, async (request: BunRequest) => {
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               email:
- *                 type: string
- *               password:
- *                 type: string
+ *             $ref: '#/components/schemas/CreateUserForm'
  *     responses:
  *       201:
  *         description: User successfully created
  *       400:
  *         description: Invalid input data
  */
-router.add('POST', `/${APP_VERSION}/auth/users`, async (request: BunRequest) => {
+router.add(
+  "POST",
+  `/${APP_VERSION}/auth/users`,
+  async (request: BunRequest) => {
     const result = await new AuthenticationController().createAuthUser(request);
     return new Response(JSON.stringify(result.body), {
-        headers: { 'Content-Type': 'application/json' },
-        status: result.statusCode
+      headers: { "Content-Type": "application/json" },
+      status: result.statusCode,
     });
-});
+  },
+);
 
 /**
  * @swagger
@@ -72,25 +78,24 @@ router.add('POST', `/${APP_VERSION}/auth/users`, async (request: BunRequest) => 
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               email:
- *                 type: string
- *               password:
- *                 type: string
+ *             $ref: '#/components/schemas/AuthenticateUserForm'
  *     responses:
  *       200:
  *         description: Successfully logged in
  *       401:
  *         description: Invalid credentials
  */
-router.add('POST', `/${APP_VERSION}/auth/login`, async (request: BunRequest) => {
+router.add(
+  "POST",
+  `/${APP_VERSION}/auth/login`,
+  async (request: BunRequest) => {
     const result = await new AuthenticationController().login(request);
     return new Response(JSON.stringify(result.body), {
-        headers: { 'Content-Type': 'application/json' },
-        status: result.statusCode
+      headers: { "Content-Type": "application/json" },
+      status: result.statusCode,
     });
-});
+  },
+);
 
 /**
  * @swagger
@@ -105,23 +110,24 @@ router.add('POST', `/${APP_VERSION}/auth/login`, async (request: BunRequest) => 
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               email:
- *                 type: string
+ *             $ref: '#/components/schemas/ResetPasswordForm'
  *     responses:
  *       200:
  *         description: OTP reset successful
  *       404:
  *         description: User not found
  */
-router.add('POST', `/${APP_VERSION}/auth/reset-otp`, async (request: BunRequest) => {
+router.add(
+  "POST",
+  `/${APP_VERSION}/auth/reset-otp`,
+  async (request: BunRequest) => {
     const result = await new AuthenticationController().resetUserOtp(request);
     return new Response(JSON.stringify(result.body), {
-        headers: { 'Content-Type': 'application/json' },
-        status: result.statusCode
+      headers: { "Content-Type": "application/json" },
+      status: result.statusCode,
     });
-});
+  },
+);
 
 /**
  * @swagger
@@ -136,12 +142,7 @@ router.add('POST', `/${APP_VERSION}/auth/reset-otp`, async (request: BunRequest)
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               email:
- *                 type: string
- *               otp:
- *                 type: string
+ *             $ref: '#/components/schemas/ValidateOtpForm'
  *     responses:
  *       200:
  *         description: OTP verified successfully
@@ -150,13 +151,17 @@ router.add('POST', `/${APP_VERSION}/auth/reset-otp`, async (request: BunRequest)
  *       404:
  *         description: User not found
  */
-router.add('POST', `/${APP_VERSION}/auth/verify-otp`, async (request: BunRequest) => {
+router.add(
+  "POST",
+  `/${APP_VERSION}/auth/verify-otp`,
+  async (request: BunRequest) => {
     const result = await new AuthenticationController().verifyUserOtp(request);
     return new Response(JSON.stringify(result.body), {
-        headers: { 'Content-Type': 'application/json' },
-        status: result.statusCode
+      headers: { "Content-Type": "application/json" },
+      status: result.statusCode,
     });
-});
+  },
+);
 
 /**
  * @swagger
@@ -185,13 +190,19 @@ router.add('POST', `/${APP_VERSION}/auth/verify-otp`, async (request: BunRequest
  *       401:
  *         description: Current password is incorrect
  */
-router.add('POST', `/${APP_VERSION}/auth/update-password`, async (request: BunRequest) => {
-    const result = await new AuthenticationController().updateUserPassword(request);
+router.add(
+  "POST",
+  `/${APP_VERSION}/auth/update-password`,
+  async (request: BunRequest) => {
+    const result = await new AuthenticationController().updateUserPassword(
+      request,
+    );
     return new Response(JSON.stringify(result.body), {
-        headers: { 'Content-Type': 'application/json' },
-        status: result.statusCode
+      headers: { "Content-Type": "application/json" },
+      status: result.statusCode,
     });
-});
+  },
+);
 
 /**
  * @swagger
@@ -206,14 +217,7 @@ router.add('POST', `/${APP_VERSION}/auth/update-password`, async (request: BunRe
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               name:
- *                 type: string
- *               phone:
- *                 type: string
- *               address:
- *                 type: string
+ *             $ref: '#/components/schemas/UpdateUserProfileForm'
  *     responses:
  *       200:
  *         description: Profile updated successfully
@@ -222,13 +226,19 @@ router.add('POST', `/${APP_VERSION}/auth/update-password`, async (request: BunRe
  *       401:
  *         description: User not authenticated
  */
-router.add('POST', `/${APP_VERSION}/auth/update-profile`, async (request: BunRequest) => {
-    const result = await new AuthenticationController().updateUserProfile(request);
+router.add(
+  "POST",
+  `/${APP_VERSION}/auth/update-profile`,
+  async (request: BunRequest) => {
+    const result = await new AuthenticationController().updateUserProfile(
+      request,
+    );
     return new Response(JSON.stringify(result.body), {
-        headers: { 'Content-Type': 'application/json' },
-        status: result.statusCode
+      headers: { "Content-Type": "application/json" },
+      status: result.statusCode,
     });
-});
+  },
+);
 
 /**
  * @swagger
@@ -244,13 +254,17 @@ router.add('POST', `/${APP_VERSION}/auth/update-profile`, async (request: BunReq
  *       401:
  *         description: User not authenticated
  */
-router.add('POST', `/${APP_VERSION}/auth/logout`, async (request: BunRequest) => {
+router.add(
+  "POST",
+  `/${APP_VERSION}/auth/logout`,
+  async (request: BunRequest) => {
     const result = await new AuthenticationController().logout(request);
     return new Response(JSON.stringify(result.body), {
-        headers: { 'Content-Type': 'application/json' },
-        status: result.statusCode
+      headers: { "Content-Type": "application/json" },
+      status: result.statusCode,
     });
-});
+  },
+);
 
 /**
  * @swagger
@@ -277,10 +291,107 @@ router.add('POST', `/${APP_VERSION}/auth/logout`, async (request: BunRequest) =>
  *       404:
  *         description: User not found
  */
-router.add('DELETE', `/${APP_VERSION}/auth/users/:id`, async (request: BunRequest) => {
+router.add(
+  "DELETE",
+  `/${APP_VERSION}/auth/users/:id`,
+  async (request: BunRequest) => {
     const result = await new AuthenticationController().deleteUser(request);
     return new Response(JSON.stringify(result.body), {
-        headers: { 'Content-Type': 'application/json' },
-        status: result.statusCode
+      headers: { "Content-Type": "application/json" },
+      status: result.statusCode,
     });
-});
+  },
+);
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     CreateUserForm:
+ *       type: object
+ *       properties:
+ *         firstName:
+ *           type: string
+ *         lastName:
+ *           type: string
+ *         email:
+ *           type: string
+ *         phoneNumber:
+ *           type: string
+ *           nullable: true
+ *         password:
+ *           type: string
+ *           nullable: true
+ *         role:
+ *           type: string
+ *         ssoId:
+ *           type: string
+ *           nullable: true
+ *         otp:
+ *           type: string
+ *           nullable: true
+ *         isSso:
+ *           type: boolean
+ *         ignoreError:
+ *           type: boolean
+ *       required:
+ *         - firstName
+ *         - lastName
+ *         - email
+ *         - role
+ *     AuthenticateUserForm:
+ *       type: object
+ *       properties:
+ *         username:
+ *           type: string
+ *         password:
+ *           type: string
+ *           nullable: true
+ *         sso_id:
+ *           type: string
+ *           nullable: true
+ *       required:
+ *         - username
+ *     ResetPasswordForm:
+ *       type: object
+ *       properties:
+ *         email:
+ *           type: string
+ *       required:
+ *         - email
+ *     ValidateOtpForm:
+ *       type: object
+ *       properties:
+ *         userUuid:
+ *           type: string
+ *           nullable: true
+ *         email:
+ *           type: string
+ *           nullable: true
+ *         phone:
+ *           type: string
+ *           nullable: true
+ *         otp:
+ *           type: string
+ *       required:
+ *         - otp
+ *     UpdateUserProfileForm:
+ *       type: object
+ *       properties:
+ *         userUuid:
+ *           type: string
+ *         firstName:
+ *           type: string
+ *           nullable: true
+ *         lastName:
+ *           type: string
+ *           nullable: true
+ *         phoneNumber:
+ *           type: string
+ *           nullable: true
+ *         email:
+ *           type: string
+ *           nullable: true
+ *       required:
+ *         - userUuid
+ */

@@ -1,6 +1,6 @@
 import { AuthorizationController } from "../controllers/AuthorizationController";
 import router, { type BunRequest } from "./router";
-const APP_VERSION = 'v1';
+const APP_VERSION = "v1";
 
 /**
  * @swagger
@@ -18,19 +18,29 @@ const APP_VERSION = 'v1';
  *               name:
  *                 type: string
  *                 description: Name of the role
+ *               editable_name:
+ *                 type: string
+ *                 description: Editable name of the role
+ *               role_uuid:
+ *                 type: string
+ *                 description: UUID of the role (optional, for updates)
  *     responses:
  *       201:
  *         description: Role created successfully
  *       400:
  *         description: Invalid request
  */
-router.add('POST', `/${APP_VERSION}/auth/roles`, async (request: BunRequest) => {
+router.add(
+  "POST",
+  `/${APP_VERSION}/auth/roles`,
+  async (request: BunRequest) => {
     const result = await new AuthorizationController().createRole(request);
     return new Response(JSON.stringify(result.body), {
-        headers: { 'Content-Type': 'application/json' },
-        status: result.statusCode
+      headers: { "Content-Type": "application/json" },
+      status: result.statusCode,
     });
-});
+  },
+);
 
 /**
  * @swagger
@@ -45,10 +55,29 @@ router.add('POST', `/${APP_VERSION}/auth/roles`, async (request: BunRequest) => 
  *           schema:
  *             type: object
  *             properties:
- *               role_id:
+ *               role_uuid:
  *                 type: string
- *               permission_name:
- *                 type: string
+ *                 description: UUID of the role
+ *               permissions:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     key:
+ *                       type: string
+ *                       description: Key of the permission
+ *                     name:
+ *                       type: string
+ *                       description: Name of the permission
+ *                     read:
+ *                       type: boolean
+ *                       description: Read permission
+ *                     write:
+ *                       type: boolean
+ *                       description: Write permission
+ *                     delete:
+ *                       type: boolean
+ *                       description: Delete permission
  *     responses:
  *       200:
  *         description: Permissions updated successfully
@@ -57,13 +86,19 @@ router.add('POST', `/${APP_VERSION}/auth/roles`, async (request: BunRequest) => 
  *       404:
  *         description: Role not found
  */
-router.add('POST', `/${APP_VERSION}/auth/permissions`, async (request: BunRequest) => {
-    const result = await new AuthorizationController().updatePermissionInRole(request);
+router.add(
+  "POST",
+  `/${APP_VERSION}/auth/permissions`,
+  async (request: BunRequest) => {
+    const result = await new AuthorizationController().updatePermissionInRole(
+      request,
+    );
     return new Response(JSON.stringify(result.body), {
-        headers: { 'Content-Type': 'application/json' },
-        status: result.statusCode
+      headers: { "Content-Type": "application/json" },
+      status: result.statusCode,
     });
-});
+  },
+);
 
 /**
  * @swagger
@@ -93,10 +128,14 @@ router.add('POST', `/${APP_VERSION}/auth/permissions`, async (request: BunReques
  *       401:
  *         description: Unauthorized
  */
-router.add('GET', `/${APP_VERSION}/auth/user-can/:permission_name`, async (request: BunRequest) => {
+router.add(
+  "GET",
+  `/${APP_VERSION}/auth/user-can/:permission_name`,
+  async (request: BunRequest) => {
     const result = await new AuthorizationController().userCan(request);
     return new Response(JSON.stringify(result.body), {
-        headers: { 'Content-Type': 'application/json' },
-        status: result.statusCode
+      headers: { "Content-Type": "application/json" },
+      status: result.statusCode,
     });
-});
+  },
+);

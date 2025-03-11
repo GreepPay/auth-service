@@ -7,6 +7,7 @@ const { DataSource } = pkg;
 // import { Permission } from './models/Permission';
 import dotenv from "dotenv";
 import fs from "fs";
+import { AuthToken, Permission, Role, User } from "./models";
 
 dotenv.config();
 
@@ -28,7 +29,7 @@ export const AppDataSource = new DataSource({
             .toString(),
         }
       : false,
-  // entities: [User, Role, Permission, AuthToken],
+  entities: [AuthToken, Permission, Role, User],
   subscribers: [],
   migrations: ["src/database/migrations/*.ts"],
 });
