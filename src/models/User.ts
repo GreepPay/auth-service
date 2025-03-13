@@ -6,7 +6,6 @@ import type { Role as RoleType } from "./Role";
 @Entity({ name: "users" })
 export class User extends BaseModel {
   @Column({ unique: true })
-  @Generated("uuid")
   uuid!: string;
 
   @Column()

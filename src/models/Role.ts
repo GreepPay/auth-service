@@ -1,4 +1,4 @@
-import { Entity, Column, OneToMany, Generated } from "typeorm";
+import { Entity, Column, OneToMany } from "typeorm";
 import { BaseModel } from "./BaseModel";
 import { User } from "./User";
 import type { User as UserType } from "./User";
@@ -7,9 +7,8 @@ import { Permission } from "./Permission";
 
 @Entity({ name: "roles" })
 export class Role extends BaseModel {
-  @Column({ unique: true })
-  @Generated("uuid")
-  uuid!: string;
+  @Column({ length: 36, nullable: true })
+  uuid!: string | null;
 
   @Column({ length: 255 })
   name!: string;
