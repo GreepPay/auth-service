@@ -43,7 +43,6 @@ export class AuthorizationService {
     const role = Role.create({
       name: data.name,
       editable_name: data.editable_name,
-      uuid: uuidv4(),
     });
 
     await role.save();

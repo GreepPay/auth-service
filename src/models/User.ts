@@ -1,4 +1,4 @@
-import { Entity, Column, ManyToOne, JoinColumn } from "typeorm";
+import { Entity, Column, ManyToOne, JoinColumn, Generated } from "typeorm";
 import { BaseModel } from "./BaseModel";
 import { Role } from "./Role";
 import type { Role as RoleType } from "./Role";
@@ -6,6 +6,7 @@ import type { Role as RoleType } from "./Role";
 @Entity({ name: "users" })
 export class User extends BaseModel {
   @Column({ unique: true })
+  @Generated("uuid")
   uuid!: string;
 
   @Column()
@@ -14,7 +15,7 @@ export class User extends BaseModel {
   @Column()
   last_name!: string;
 
-  @Column()
+  @Column({ nullable: true })
   username!: string;
 
   @Column({ unique: true })

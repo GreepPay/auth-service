@@ -78,12 +78,13 @@ export class AuthenticationService {
       newUser.email = data.email;
       newUser.phone = data.phoneNumber;
       newUser.password = data.password ? await hash(data.password, 10) : '';
+      newUser.password_created_at = new Date();
       newUser.otp = data.otp;
       newUser.otp_expired_at = new Date(Date.now() + 43200 * 60 * 1000); // 30 days
       newUser.role_id = role.id.toString();
       newUser.sso_id = data.ssoId;
 
-      const user = await User.create(newUser);
+      const user = await User.create(newUser).save();
 
       // Handle SSO verification
       if (data.isSso) {
