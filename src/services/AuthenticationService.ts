@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from "uuid";
 import { User } from '../models/User';
 import { hash, compare } from 'bcrypt';
 import HttpResponse, { type HttpResponseType } from '../common/HttpResponse';
@@ -73,17 +74,19 @@ export class AuthenticationService {
     if (!existingUser) {
       // Initialize new user object with provided data
       const newUser = new User();
+      newUser.uuid = uuidv4(),
       newUser.first_name = data.firstName;
       newUser.last_name = data.lastName;
       newUser.email = data.email;
       newUser.phone = data.phoneNumber;
       newUser.password = data.password ? await hash(data.password, 10) : '';
+      newUser.password_created_at = new Date();
       newUser.otp = data.otp;
       newUser.otp_expired_at = new Date(Date.now() + 43200 * 60 * 1000); // 30 days
       newUser.role_id = role.id.toString();
       newUser.sso_id = data.ssoId;
 
-      const user = await User.create(newUser);
+      const user = await User.create(newUser).save();
 
       // Handle SSO verification
       if (data.isSso) {
@@ -118,21 +121,27 @@ export class AuthenticationService {
    * @returns Promise resolving to token and user object or HTTP response
    */
   async authenticateUser(data: AuthenticateUserForm): Promise<AuthenticateUserResponse | HttpResponseType> {
-    // Step 1: Find user by email or phone
     let user: User | null = null;
     
     if (this.isNumeric(data.username)) {
-      user = await User.findOne({ where: { phone: data.username } });
+      user = await User.findOne({
+        where: { phone: data.username },
+        select: ["id", "first_name", "last_name", "email", "phone", "password", "sso_id", "uuid"]
+      });
     } else {
-      user = await User.findOne({ where: { email: data.username } });
+      user = await User.findOne({
+        where: { email: data.username },
+        select: ["id", "first_name", "last_name", "email", "phone", "password", "sso_id", "uuid"]
+      });
     }
-
+  
     if (!user) {
       return HttpResponse.failure('User with email does not exist, please Sign Up.', 401);
     }
-
+  
     // Step 2: Validate credentials
     if (data.password) {
+      // Compare provided password with stored hashed password
       const isValidPassword = await compare(data.password, user.password);
       if (!isValidPassword) {
         return HttpResponse.failure('Credentials do not match our records!', 401);
@@ -143,10 +152,10 @@ export class AuthenticationService {
         return HttpResponse.failure('Credentials do not match our records!', 401);
       }
     }
-
+  
     // Step 3: Generate JWT token
     const token = this.jwtService.generateToken(user);
-
+  
     // Step 4: Handle device login limits
     if (process.env.APP_STATE && token) {
       const maxActiveDevices = 4;
@@ -154,26 +163,26 @@ export class AuthenticationService {
         where: { auth_id: user.uuid },
         order: { created_at: 'ASC' }
       });
-
-      // Remove older tokens if limit exceeded
+  
+      // Remove older tokens if limit exceeded (keep the first token, delete the rest)
       if (existingTokens.length >= maxActiveDevices) {
-        // Keep the first token, delete the rest
         for (const oldToken of existingTokens.slice(1)) {
           await AuthToken.delete(oldToken.id);
         }
       }
-
+  
       // Create new auth token
       await AuthToken.create({
         auth_id: user.uuid,
         auth_token: token
       });
     }
-
+  
     return token 
       ? { token, user }
       : HttpResponse.failure('Credentials do not match our records!', 401);
   }
+  
 
   /**
    * Resets user OTP and updates expiration time
