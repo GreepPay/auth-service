@@ -1,13 +1,9 @@
 import "reflect-metadata";
 import pkg from "typeorm";
 const { DataSource } = pkg;
-// import { User } from './models/User';
-// import { Role } from './models/Role';
-// import { AuthToken } from './models/AuthToken';
-// import { Permission } from './models/Permission';
 import dotenv from "dotenv";
 import fs from "fs";
-import { AuthToken, Permission, Role, User } from "./models";
+// import { AuthToken, Permission, Role, User } from "./models";
 
 dotenv.config();
 
@@ -29,7 +25,10 @@ export const AppDataSource = new DataSource({
             .toString(),
         }
       : false,
-  entities: [AuthToken, Permission, Role, User],
+  entities: [
+    // AuthToken, Permission, Role, User
+
+  ],
   subscribers: [],
   migrations: ["src/database/migrations/*.ts"],
 });

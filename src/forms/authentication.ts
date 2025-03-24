@@ -13,6 +13,9 @@ export interface CreateUserForm {
   otp?: string;
   isSso?: boolean;
   ignoreError?: boolean;
+  state?: string;
+  country?: string;
+  defaultCurrency?: string;
 }
 
 export interface UpdateUserProfileForm {

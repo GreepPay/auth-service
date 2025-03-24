@@ -45,74 +45,85 @@ export class AuthenticationService {
     }
   }
 
-  /**
-   * Creates a new user or updates existing user based on provided data
-   * @param data - User creation form data
-   * @returns Promise resolving to User object or HTTP response
-   */
-  async saveUser(data: CreateUserForm): Promise<User | HttpResponseType> {
-    // Step 1: Check for existing user and valid role
-    const existingUser = await User.findOne({ where: { email: data.email } });
-    const role = await Role.findOne({ where: { name: data.role } });
-    if (!role) {
-      return HttpResponse.failure('User role must be specified', 400);
-    }
+/**
+ * Creates a new user or updates an existing user based on provided data
+ * @param data - User creation form data
+ * @returns Promise resolving to User object or HTTP response
+ */
+async saveUser(data: CreateUserForm): Promise<User | HttpResponseType> {
+  // Step 1: Check for existing user and valid role
+  const existingUser = await User.findOne({ where: { email: data.email } });
+  const role = await Role.findOne({ where: { name: data.role } });
+  if (!role) {
+    return HttpResponse.failure('User role must be specified', 400);
+  }
 
-    // Step 2: Handle phone number verification
-    if (data.phoneNumber) {
-      const userByPhone = await User.findOne({ where: { phone: data.phoneNumber } });
-      if (userByPhone) {
-        if (userByPhone.phone_verified_at) {
-          return HttpResponse.failure('User with phone number exists', 400);
-        } else {
-          return await this.resetUserOtp(userByPhone.uuid);
-        }
+  // Step 2: Handle phone number verification
+  if (data.phoneNumber) {
+    const userByPhone = await User.findOne({ where: { phone: data.phoneNumber } });
+    if (userByPhone) {
+      if (userByPhone.phone_verified_at) {
+        return HttpResponse.failure('User with phone number exists', 400);
+      } else {
+        return await this.resetUserOtp(userByPhone.uuid);
       }
-    }
-
-    // Step 3: Create new user if doesn't exist
-    if (!existingUser) {
-      // Initialize new user object with provided data
-      const newUser = new User();
-      newUser.uuid = uuidv4(),
-      newUser.first_name = data.firstName;
-      newUser.last_name = data.lastName;
-      newUser.email = data.email;
-      newUser.phone = data.phoneNumber;
-      newUser.password = data.password ? await hash(data.password, 10) : '';
-      newUser.password_created_at = new Date();
-      newUser.otp = data.otp;
-      newUser.otp_expired_at = new Date(Date.now() + 43200 * 60 * 1000); // 30 days
-      newUser.role_id = role.id.toString();
-      newUser.sso_id = data.ssoId;
-
-      const user = await User.create(newUser).save();
-
-      // Handle SSO verification
-      if (data.isSso) {
-        user.email_verified_at = new Date();
-        await user.save();
-      }
-
-      return user;
-    } else {
-      // Step 4: Handle existing user scenarios
-      if (data.ignoreError) {
-        // Update existing user if ignoreError flag is true
-        existingUser.first_name = data.firstName || existingUser.first_name;
-        existingUser.last_name = data.lastName || existingUser.last_name;
-        existingUser.otp = data.otp;
-        await existingUser.save();
-        return existingUser;
-      }
-
-      if (existingUser.email_verified_at && existingUser.password) {
-        return HttpResponse.failure('User with email already exists', 400);
-      }
-
-      return existingUser;
     }
   }
+
+  // Step 3: Create new user if doesn't exist
+  if (!existingUser) {
+    // Initialize new user object with provided data
+    const newUser = new User();
+    newUser.uuid = uuidv4();
+    newUser.first_name = data.firstName;
+    newUser.last_name = data.lastName;
+    newUser.email = data.email;
+    newUser.phone = data.phoneNumber;
+    newUser.password = data.password ? await hash(data.password, 10) : '';
+    newUser.password_created_at = new Date();
+    newUser.otp = data.otp;
+    newUser.otp_expired_at = new Date(Date.now() + 43200 * 60 * 1000); // 30 days
+    newUser.role_id = role.id.toString();
+    newUser.sso_id = data.ssoId;
+
+    // Set the new fields
+    newUser.state = data.state;
+    newUser.country = data.country;
+    newUser.default_currency = data.defaultCurrency;
+
+    const user = await User.create(newUser).save();
+
+    // Handle SSO verification
+    if (data.isSso) {
+      user.email_verified_at = new Date();
+      await user.save();
+    }
+
+    return user;
+  } else {
+    // Step 4: Handle existing user scenarios
+    if (data.ignoreError) {
+      // Update existing user if ignoreError flag is true
+      existingUser.first_name = data.firstName || existingUser.first_name;
+      existingUser.last_name = data.lastName || existingUser.last_name;
+      existingUser.otp = data.otp;
+
+      // Update new fields if provided
+      existingUser.state = data.state || existingUser.state;
+      existingUser.country = data.country || existingUser.country;
+      existingUser.default_currency = data.defaultCurrency || existingUser.default_currency;
+
+      await existingUser.save();
+      return existingUser;
+    }
+
+    if (existingUser.email_verified_at && existingUser.password) {
+      return HttpResponse.failure('User with email already exists', 400);
+    }
+
+    return existingUser;
+  }
+}
 
   /**
    * Authenticates user with email and password

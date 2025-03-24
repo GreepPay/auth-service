@@ -1,4 +1,4 @@
-import { Entity, Column, ManyToOne, JoinColumn, Generated } from "typeorm";
+import { Entity, Column, ManyToOne, JoinColumn } from "typeorm";
 import { BaseModel } from "./BaseModel";
 import { Role } from "./Role";
 import type { Role as RoleType } from "./Role";
@@ -53,11 +53,19 @@ export class User extends BaseModel {
   @Column({ nullable: true })
   sso_id?: string;
 
+  @Column({ nullable: true })
+  state?: string;
+
+  @Column({ nullable: true })
+  country?: string;
+
+  @Column({ nullable: true })
+  default_currency?: string;
+
   @ManyToOne(() => Role, { nullable: true })
   @JoinColumn({ name: "role_id" })
   role?: RoleType;
 
-  // Virtual property that combines first_name and last_name
   get full_name(): string {
     return `${this.first_name} ${this.last_name}`.trim();
   }
