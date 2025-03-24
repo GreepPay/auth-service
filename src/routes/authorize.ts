@@ -1,5 +1,10 @@
 import { AuthorizationController } from "../controllers/AuthorizationController";
 import router, { type BunRequest } from "./router";
+import {
+  type CreateRoleForm,
+  type UpdatePermissionForm,
+} from "../forms/authorization";
+
 const APP_VERSION = "v1";
 
 /**
@@ -13,22 +18,36 @@ const APP_VERSION = "v1";
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               name:
- *                 type: string
- *                 description: Name of the role
- *               editable_name:
- *                 type: string
- *                 description: Editable name of the role
- *               role_uuid:
- *                 type: string
- *                 description: UUID of the role (optional, for updates)
+ *             $ref: '#/components/schemas/CreateRoleForm'
  *     responses:
  *       201:
  *         description: Role created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Role created successfully
+ *                 data:
+ *                   type: object
+ *                   description: Role data
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       description: The UUID of the created role.
+ *                       example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
  *       400:
  *         description: Invalid request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Invalid request body
  */
 router.add(
   "POST",
@@ -53,38 +72,38 @@ router.add(
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               role_uuid:
- *                 type: string
- *                 description: UUID of the role
- *               permissions:
- *                 type: array
- *                 items:
- *                   type: object
- *                   properties:
- *                     key:
- *                       type: string
- *                       description: Key of the permission
- *                     name:
- *                       type: string
- *                       description: Name of the permission
- *                     read:
- *                       type: boolean
- *                       description: Read permission
- *                     write:
- *                       type: boolean
- *                       description: Write permission
- *                     delete:
- *                       type: boolean
- *                       description: Delete permission
+ *             $ref: '#/components/schemas/UpdatePermissionForm'
  *     responses:
  *       200:
  *         description: Permissions updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Permissions updated successfully
  *       400:
  *         description: Invalid request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Invalid request body
  *       404:
  *         description: Role not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Role not found
  */
 router.add(
   "POST",
@@ -123,10 +142,27 @@ router.add(
  *               properties:
  *                 can:
  *                   type: boolean
+ *                   example: true
  *       400:
  *         description: Invalid request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Invalid request
  *       401:
  *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Unauthorized
  */
 router.add(
   "GET",
@@ -139,3 +175,56 @@ router.add(
     });
   },
 );
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     CreateRoleForm:
+ *       type: object
+ *       properties:
+ *         name:
+ *           type: string
+ *           description: Name of the role
+ *           example: "Administrator"
+ *         editable_name:
+ *           type: string
+ *           description: Editable name of the role
+ *           example: "Admin"
+ *         role_uuid:
+ *           type: string
+ *           description: UUID of the role (optional, for updates)
+ *           example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
+ *     UpdatePermissionForm:
+ *       type: object
+ *       properties:
+ *         role_uuid:
+ *           type: string
+ *           description: UUID of the role
+ *           example: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
+ *         permissions:
+ *           type: array
+ *           items:
+ *             type: object
+ *             properties:
+ *               key:
+ *                 type: string
+ *                 description: Key of the permission
+ *                 example: "users.view"
+ *               name:
+ *                 type: string
+ *                 description: Name of the permission
+ *                 example: "View Users"
+ *               read:
+ *                 type: boolean
+ *                 description: Read permission
+ *                 example: true
+ *               write:
+ *                 type: boolean
+ *                 description: Write permission
+ *                 example: false
+ *               delete:
+ *                 type: boolean
+ *                 description: Delete permission
+ *                 example: false
+ */

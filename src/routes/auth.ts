@@ -1,12 +1,5 @@
 import { AuthenticationController } from "../controllers/AuthenticationController";
 import router, { type BunRequest } from "./router";
-import {
-  type CreateUserForm,
-  type ResetPasswordForm,
-  type ValidateOtpForm,
-  type UpdateUserProfileForm,
-  type AuthenticateUserForm,
-} from "../forms/authentication";
 
 const APP_VERSION = "v1";
 
@@ -21,6 +14,14 @@ const APP_VERSION = "v1";
  *     responses:
  *       200:
  *         description: Successfully retrieved user information
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 user:
+ *                   type: object
+ *                   $ref: '#/components/schemas/User'
  *       401:
  *         description: Unauthorized - User not authenticated
  */
@@ -50,8 +51,27 @@ router.add("GET", `/${APP_VERSION}/auth/me`, async (request: BunRequest) => {
  *     responses:
  *       201:
  *         description: User successfully created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "User created successfully"
+ *                 userUuid:
+ *                   type: string
+ *                   example: "uuid"
  *       400:
  *         description: Invalid input data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Validation error"
  */
 router.add(
   "POST",
@@ -82,8 +102,20 @@ router.add(
  *     responses:
  *       200:
  *         description: Successfully logged in
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/AuthenticateUserResponse'
  *       401:
  *         description: Invalid credentials
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Invalid credentials"
  */
 router.add(
   "POST",
@@ -114,8 +146,24 @@ router.add(
  *     responses:
  *       200:
  *         description: OTP reset successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "OTP reset successfully"
  *       404:
  *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "User not found"
  */
 router.add(
   "POST",
@@ -146,10 +194,34 @@ router.add(
  *     responses:
  *       200:
  *         description: OTP verified successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "OTP verified successfully"
  *       400:
  *         description: Invalid OTP
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Invalid OTP"
  *       404:
  *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "User not found"
  */
 router.add(
   "POST",
@@ -180,15 +252,41 @@ router.add(
  *             properties:
  *               currentPassword:
  *                 type: string
+ *                 example: "currentPassword123"
  *               newPassword:
  *                 type: string
+ *                 example: "newPassword456"
  *     responses:
  *       200:
  *         description: Password updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Password updated successfully"
  *       400:
  *         description: Invalid password format
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Invalid password format"
  *       401:
  *         description: Current password is incorrect
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Incorrect current password"
  */
 router.add(
   "POST",
@@ -221,10 +319,34 @@ router.add(
  *     responses:
  *       200:
  *         description: Profile updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Profile updated successfully"
  *       400:
  *         description: Invalid input data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Validation error"
  *       401:
  *         description: User not authenticated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Unauthorized"
  */
 router.add(
   "POST",
@@ -251,8 +373,24 @@ router.add(
  *     responses:
  *       200:
  *         description: Successfully logged out
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Successfully logged out"
  *       401:
  *         description: User not authenticated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Unauthorized"
  */
 router.add(
   "POST",
@@ -284,12 +422,44 @@ router.add(
  *     responses:
  *       200:
  *         description: User successfully deleted
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "User deleted successfully"
  *       401:
  *         description: Unauthorized - User not authenticated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Unauthorized"
  *       403:
  *         description: Forbidden - User doesn't have permission
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Forbidden"
  *       404:
  *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "User not found"
  */
 router.add(
   "DELETE",
@@ -307,33 +477,59 @@ router.add(
  * @swagger
  * components:
  *   schemas:
+ *     User:
+ *      type: object
+ *      properties:
+ *        userUuid:
+ *          type: string
+ *        firstName:
+ *          type: string
+ *        lastName:
+ *          type: string
+ *        email:
+ *          type: string
+ *        phoneNumber:
+ *          type: string
+ *          nullable: true
+ *        role:
+ *          type: string
  *     CreateUserForm:
  *       type: object
  *       properties:
  *         firstName:
  *           type: string
+ *           example: "John"
  *         lastName:
  *           type: string
+ *           example: "Doe"
  *         email:
  *           type: string
+ *           example: "john.doe@example.com"
  *         phoneNumber:
  *           type: string
  *           nullable: true
+ *           example: "123-456-7890"
  *         password:
  *           type: string
  *           nullable: true
+ *           example: "password123"
  *         role:
  *           type: string
+ *           example: "admin"
  *         ssoId:
  *           type: string
  *           nullable: true
+ *           example: "sso123"
  *         otp:
  *           type: string
  *           nullable: true
+ *           example: "123456"
  *         isSso:
  *           type: boolean
+ *           example: false
  *         ignoreError:
  *           type: boolean
+ *           example: false
  *       required:
  *         - firstName
  *         - lastName
@@ -344,19 +540,31 @@ router.add(
  *       properties:
  *         username:
  *           type: string
+ *           example: "john.doe@example.com"
  *         password:
  *           type: string
  *           nullable: true
+ *           example: "password123"
  *         sso_id:
  *           type: string
  *           nullable: true
+ *           example: "sso123"
  *       required:
  *         - username
+ *     AuthenticateUserResponse:
+ *       type: object
+ *       properties:
+ *         token:
+ *           type: string
+ *           example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+ *         user:
+ *           $ref: '#/components/schemas/User'
  *     ResetPasswordForm:
  *       type: object
  *       properties:
  *         email:
  *           type: string
+ *           example: "john.doe@example.com"
  *       required:
  *         - email
  *     ValidateOtpForm:
@@ -365,14 +573,18 @@ router.add(
  *         userUuid:
  *           type: string
  *           nullable: true
+ *           example: "uuid"
  *         email:
  *           type: string
  *           nullable: true
+ *           example: "john.doe@example.com"
  *         phone:
  *           type: string
  *           nullable: true
+ *           example: "123-456-7890"
  *         otp:
  *           type: string
+ *           example: "123456"
  *       required:
  *         - otp
  *     UpdateUserProfileForm:
@@ -380,18 +592,23 @@ router.add(
  *       properties:
  *         userUuid:
  *           type: string
+ *           example: "uuid"
  *         firstName:
  *           type: string
  *           nullable: true
+ *           example: "Jane"
  *         lastName:
  *           type: string
  *           nullable: true
+ *           example: "Smith"
  *         phoneNumber:
  *           type: string
  *           nullable: true
+ *           example: "987-654-3210"
  *         email:
  *           type: string
  *           nullable: true
+ *           example: "jane.smith@example.com"
  *       required:
  *         - userUuid
  */
