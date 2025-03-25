@@ -3,7 +3,7 @@ import pkg from "typeorm";
 const { DataSource } = pkg;
 import dotenv from "dotenv";
 import fs from "fs";
-// import { AuthToken, Permission, Role, User } from "./models";
+import { AuthToken, Permission, Role, User } from "./models";
 
 dotenv.config();
 
@@ -25,10 +25,7 @@ export const AppDataSource = new DataSource({
             .toString(),
         }
       : false,
-  entities: [
-    // AuthToken, Permission, Role, User
-
-  ],
+  entities: [AuthToken, Permission, Role, User],
   subscribers: [],
   migrations: ["src/database/migrations/*.ts"],
 });
