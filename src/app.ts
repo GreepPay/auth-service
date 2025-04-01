@@ -10,7 +10,8 @@ const swaggerUiPath = join(__dirname, "../node_modules/swagger-ui-dist");
 AppDataSource.initialize()
   .then(() => {
     Bun.serve({
-      port: parseInt(process.env.PORT || "3000"),
+      hostname: "0.0.0.0", // Bind to all IP addresses
+      port: parseInt(process.env.PORT || "8080"),
       async fetch(req: Request) {
         const url = new URL(req.url);
 

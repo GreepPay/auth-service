@@ -1,12 +1,19 @@
-import { User } from '../models/User';
-import { hash, compare } from 'bcrypt';
-import HttpResponse, { type HttpResponseType } from '../common/HttpResponse';
-import { JwtService } from '../common/JWTService';
-import { Role } from '../models/Role';
-import { AuthToken } from '../models/AuthToken';
-import { randomBytes } from 'crypto';
-import type { AuthenticateUserForm, AuthenticateUserResponse, CreateUserForm, ResetPasswordForm, UpdateUserProfileForm, ValidateOtpForm } from '../forms/authentication';
-import { generateOtp } from '../common/utils';
+import { User } from "../models/User";
+import { hash, compare } from "bcrypt";
+import HttpResponse, { type HttpResponseType } from "../common/HttpResponse";
+import { JwtService } from "../common/JWTService";
+import { Role } from "../models/Role";
+import { AuthToken } from "../models/AuthToken";
+import { randomBytes } from "crypto";
+import type {
+  AuthenticateUserForm,
+  AuthenticateUserResponse,
+  CreateUserForm,
+  ResetPasswordForm,
+  UpdateUserProfileForm,
+  ValidateOtpForm,
+} from "../forms/authentication";
+import { generateOtp } from "../common/utils";
 
 /**
  * Service class handling user-related operations including authentication,
@@ -18,7 +25,7 @@ export class AuthenticationService {
   private isNumeric(value: string): boolean {
     return /^\d+$/.test(value);
   }
-  
+
   constructor(request: Request) {
     this.jwtService = new JwtService(request);
   }
@@ -29,18 +36,18 @@ export class AuthenticationService {
    */
   async authUser(): Promise<User | HttpResponseType> {
     try {
-      const user = await User.findOne({ 
+      const user = await User.findOne({
         where: { uuid: this.jwtService.getCurrentUserId() },
-        relations: ['role']
+        relations: ["role"],
       });
 
       if (!user) {
-        return HttpResponse.failure('User not found', 404);
+        return HttpResponse.failure("User not found", 404);
       }
 
       return user;
     } catch (error) {
-      return HttpResponse.failure('Authentication failed', 401);
+      return HttpResponse.failure("Authentication failed", 401);
     }
   }
 
@@ -54,15 +61,17 @@ export class AuthenticationService {
     const existingUser = await User.findOne({ where: { email: data.email } });
     const role = await Role.findOne({ where: { name: data.role } });
     if (!role) {
-      return HttpResponse.failure('User role must be specified', 400);
+      return HttpResponse.failure("User role must be specified", 400);
     }
 
     // Step 2: Handle phone number verification
     if (data.phoneNumber) {
-      const userByPhone = await User.findOne({ where: { phone: data.phoneNumber } });
+      const userByPhone = await User.findOne({
+        where: { phone: data.phoneNumber },
+      });
       if (userByPhone) {
         if (userByPhone.phone_verified_at) {
-          return HttpResponse.failure('User with phone number exists', 400);
+          return HttpResponse.failure("User with phone number exists", 400);
         } else {
           return await this.resetUserOtp(userByPhone.uuid);
         }
@@ -77,7 +86,7 @@ export class AuthenticationService {
       newUser.last_name = data.lastName;
       newUser.email = data.email;
       newUser.phone = data.phoneNumber;
-      newUser.password = data.password ? await hash(data.password, 10) : '';
+      newUser.password = data.password ? await hash(data.password, 10) : "";
       newUser.otp = data.otp;
       newUser.otp_expired_at = new Date(Date.now() + 43200 * 60 * 1000); // 30 days
       newUser.role_id = role.id.toString();
@@ -104,7 +113,7 @@ export class AuthenticationService {
       }
 
       if (existingUser.email_verified_at && existingUser.password) {
-        return HttpResponse.failure('User with email already exists', 400);
+        return HttpResponse.failure("User with email already exists", 400);
       }
 
       return existingUser;
@@ -117,10 +126,12 @@ export class AuthenticationService {
    * @param password - User's password
    * @returns Promise resolving to token and user object or HTTP response
    */
-  async authenticateUser(data: AuthenticateUserForm): Promise<AuthenticateUserResponse | HttpResponseType> {
+  async authenticateUser(
+    data: AuthenticateUserForm,
+  ): Promise<AuthenticateUserResponse | HttpResponseType> {
     // Step 1: Find user by email or phone
     let user: User | null = null;
-    
+
     if (this.isNumeric(data.username)) {
       user = await User.findOne({ where: { phone: data.username } });
     } else {
@@ -128,19 +139,28 @@ export class AuthenticationService {
     }
 
     if (!user) {
-      return HttpResponse.failure('User with email does not exist, please Sign Up.', 401);
+      return HttpResponse.failure(
+        "User with email does not exist, please Sign Up.",
+        401,
+      );
     }
 
     // Step 2: Validate credentials
     if (data.password) {
       const isValidPassword = await compare(data.password, user.password);
       if (!isValidPassword) {
-        return HttpResponse.failure('Credentials do not match our records!', 401);
+        return HttpResponse.failure(
+          "Credentials do not match our records!",
+          401,
+        );
       }
     } else {
       // SSO login validation
       if (user.sso_id && user.sso_id !== data.sso_id) {
-        return HttpResponse.failure('Credentials do not match our records!', 401);
+        return HttpResponse.failure(
+          "Credentials do not match our records!",
+          401,
+        );
       }
     }
 
@@ -152,7 +172,7 @@ export class AuthenticationService {
       const maxActiveDevices = 4;
       const existingTokens = await AuthToken.find({
         where: { auth_id: user.uuid },
-        order: { created_at: 'ASC' }
+        order: { created_at: "ASC" },
       });
 
       // Remove older tokens if limit exceeded
@@ -166,25 +186,29 @@ export class AuthenticationService {
       // Create new auth token
       await AuthToken.create({
         auth_id: user.uuid,
-        auth_token: token
+        auth_token: token,
       });
     }
 
-    return token 
+    return token
       ? { token, user }
-      : HttpResponse.failure('Credentials do not match our records!', 401);
+      : HttpResponse.failure("Credentials do not match our records!", 401);
   }
 
   /**
    * Resets user OTP and updates expiration time
-   * @param userUuid - UUID of the user
+   * @param ResetpasswordForm
    * @returns Promise resolving to User object or HTTP response
    */
-  async resetUserOtp(userUuid: string): Promise<User | HttpResponseType> {
+  async resetUserOtp(Useruuid: string): Promise<User | HttpResponseType> {
     // Step 1: Find user by UUID
-    const user = await User.findOne({ where: { uuid: userUuid } });
+    let user = await User.findOne({ where: { uuid: Useruuid } });
+
     if (!user) {
-      return HttpResponse.failure('User not found', 400);
+      user = await User.findOne({ where: { email: Useruuid } });
+    }
+    if (!user) {
+      return HttpResponse.failure("User not found", 400);
     }
 
     // Step 2: Generate and set new OTP
@@ -205,21 +229,20 @@ export class AuthenticationService {
     // Step 1: Find and validate user
     const user = await User.findOne({ where: { email: data.email } });
     if (!user) {
-      return HttpResponse.failure('User not found', 400);
+      return HttpResponse.failure("User not found", 400);
     }
 
     if (!user.email_verified_at) {
-      return HttpResponse.failure('Email not verified', 400);
+      return HttpResponse.failure("Email not verified", 400);
     }
 
     // Step 2: Hash and update password
     user.password = await hash(data.password, 10);
     await user.save();
 
-    return HttpResponse.success('Password updated successfully', 200);
+    return HttpResponse.success("Password updated successfully", 200);
   }
 
-  
   /**
    * Updates user profile information
    * @param userUuid - UUID of the user
@@ -227,21 +250,21 @@ export class AuthenticationService {
    * @returns Promise resolving to updated User object or HTTP response
    */
   async updateUserProfile(
-    data: UpdateUserProfileForm
+    data: UpdateUserProfileForm,
   ): Promise<User | HttpResponseType> {
     // Step 1: Find and validate user
     const user = await User.findOne({ where: { uuid: data.userUuid } });
     if (!user) {
-      return HttpResponse.failure('User not found', 400);
+      return HttpResponse.failure("User not found", 400);
     }
 
     // Step 2: Check for phone number uniqueness if being updated
     if (data.phoneNumber && data.phoneNumber !== user.phone) {
       const existingUserWithPhone = await User.findOne({
-        where: { phone: data.phoneNumber }
+        where: { phone: data.phoneNumber },
       });
       if (existingUserWithPhone) {
-        return HttpResponse.failure('Phone number already exists', 400);
+        return HttpResponse.failure("Phone number already exists", 400);
       }
     }
 
@@ -249,7 +272,7 @@ export class AuthenticationService {
     if (data.email) {
       const existingUser = await User.findOne({ where: { email: data.email } });
       if (existingUser && existingUser.uuid !== user.uuid) {
-        return HttpResponse.failure('Email already in use', 400);
+        return HttpResponse.failure("Email already in use", 400);
       }
     }
 
@@ -258,7 +281,7 @@ export class AuthenticationService {
     user.last_name = data.lastName || user.last_name;
     user.phone = data.phoneNumber || user.phone;
     user.email = data.email || user.email;
-    
+
     if (data.phoneNumber && data.phoneNumber !== user.phone) {
       user.phone_verified_at = undefined; // Reset phone verification if number changed
     }
@@ -275,8 +298,8 @@ export class AuthenticationService {
    */
   async logoutUser(): Promise<HttpResponseType> {
     // Currrent auth user
-    const currentUser = await User.findOne({ 
-      where: { uuid: this.jwtService.getCurrentUserId() }
+    const currentUser = await User.findOne({
+      where: { uuid: this.jwtService.getCurrentUserId() },
     });
 
     const token = this.jwtService.getBearerToken();
@@ -285,10 +308,9 @@ export class AuthenticationService {
       await AuthToken.delete({ auth_id: currentUser?.uuid, auth_token: token });
     }
 
-    return HttpResponse.success('Logged out successfully', 200);
+    return HttpResponse.success("Logged out successfully", 200);
   }
 
-  
   /**
    * Verifies user OTP and updates verification status
    * @param data - Object containing user identifier and OTP
@@ -303,16 +325,16 @@ export class AuthenticationService {
     }
 
     if (!user) {
-      return HttpResponse.failure('User not found', 400);
+      return HttpResponse.failure("User not found", 400);
     }
 
     // Step 2: Validate OTP
     if (user.otp_expired_at && user.otp_expired_at < new Date()) {
-      return HttpResponse.failure('OTP expired', 400);
+      return HttpResponse.failure("OTP expired", 400);
     }
 
     if (user.otp !== data.otp.trim()) {
-      return HttpResponse.failure('Incorrect OTP! Enter valid otp', 400);
+      return HttpResponse.failure("Incorrect OTP! Enter valid otp", 400);
     }
 
     // Step 3: Handle phone/email verification
@@ -323,15 +345,14 @@ export class AuthenticationService {
       return user;
     } else {
       if (user.email_verified_at) {
-        return HttpResponse.success('OTP Verified', 200);
+        return HttpResponse.success("OTP Verified", 200);
       }
       user.email_verified_at = new Date();
       await user.save();
     }
 
-    return HttpResponse.success('OTP Verified', 200);
+    return HttpResponse.success("OTP Verified", 200);
   }
-
 
   /**
    * Deletes user account
@@ -340,19 +361,19 @@ export class AuthenticationService {
    */
   async deleteUser(userId: string): Promise<HttpResponseType> {
     const user = await User.findOne({ where: { uuid: userId } });
-    
+
     if (!user) {
-      return HttpResponse.failure('User not found', 400);
+      return HttpResponse.failure("User not found", 400);
     }
 
     await User.update(userId, {
-      first_name: 'Deleted',
-      last_name: 'Account',
-      email: '',
-      phone: '',
-      status: 'deleted'
+      first_name: "Deleted",
+      last_name: "Account",
+      email: "",
+      phone: "",
+      status: "deleted",
     });
 
-    return HttpResponse.success('User deleted successfully', 200);
+    return HttpResponse.success("User deleted successfully", 200);
   }
 }
