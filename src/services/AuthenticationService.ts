@@ -252,7 +252,7 @@ export class AuthenticationService {
     // Step 2: Generate and set new OTP
     const otp = generateOtp();
     user.otp = otp;
-    user.otp_expired_at = new Date(Date.now() + 43200 * 60 * 1000); // 30 days expiration
+    user.otp_expired_at = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes expiration
     await user.save();
 
     return user;
