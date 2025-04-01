@@ -54,9 +54,9 @@ export class AuthenticationController {
   // Reset user OTP
   async resetUserOtp(request: BunRequest) {
     let data: ResetPasswordForm = (await request.json()) as ResetPasswordForm;
-    let response = await new AuthenticationService(request).resetUserOtp({
-      email: data.email,
-    } as ResetPasswordForm);
+    let response = await new AuthenticationService(request).resetUserOtp(
+      data.email,
+    );
 
     if (response instanceof User) {
       return HttpResponse.success("User OTP reset successfully", response);
