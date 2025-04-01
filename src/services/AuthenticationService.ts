@@ -73,9 +73,7 @@ export class AuthenticationService {
         if (userByPhone.phone_verified_at) {
           return HttpResponse.failure("User with phone number exists", 400);
         } else {
-          return await this.resetUserOtp({
-            uuid: userByPhone.uuid,
-          } as ResetPasswordForm);
+          return await this.resetUserOtp(userByPhone.uuid);
         }
       }
     }
@@ -202,14 +200,12 @@ export class AuthenticationService {
    * @param ResetpasswordForm
    * @returns Promise resolving to User object or HTTP response
    */
-  async resetUserOtp(
-    data: ResetPasswordForm,
-  ): Promise<User | HttpResponseType> {
+  async resetUserOtp(Useruuid: string): Promise<User | HttpResponseType> {
     // Step 1: Find user by UUID
-    let user = await User.findOne({ where: { uuid: data.uuid } });
+    let user = await User.findOne({ where: { uuid: Useruuid } });
 
-    if (!user && data.email) {
-      user = await User.findOne({ where: { email: data.email } });
+    if (!user) {
+      user = await User.findOne({ where: { email: Useruuid } });
     }
     if (!user) {
       return HttpResponse.failure("User not found", 400);
