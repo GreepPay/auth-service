@@ -35,7 +35,10 @@ export interface ValidateOtpForm {
 
 export interface ResetPasswordForm {
   email: string;
+  uuid?: string;
   password: string;
+  phone?: string;
+  otp?: string;
 }
 
 export interface AuthenticateUserForm {
