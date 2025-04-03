@@ -3,7 +3,7 @@ import { BaseModel } from "./BaseModel";
 import { Role } from "./Role";
 import type { Role as RoleType } from "./Role";
 
-@Entity({ name: "permissions" })
+@Entity({ name: "auth_service.permissions" })
 export class Permission extends BaseModel {
   @Column({ length: 36 })
   uuid!: string;

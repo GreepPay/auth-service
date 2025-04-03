@@ -3,7 +3,7 @@ import { BaseModel } from "./BaseModel";
 import { Role } from "./Role";
 import type { Role as RoleType } from "./Role";
 
-@Entity({ name: "users" })
+@Entity({ name: "auth_service.users" })
 export class User extends BaseModel {
   @Column({ unique: true })
   uuid!: string;
