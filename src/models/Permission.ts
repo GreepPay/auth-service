@@ -1,28 +1,29 @@
-import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
-import { BaseModel } from './BaseModel';
-import { Role } from './Role';
+import { Entity, Column, ManyToOne, JoinColumn } from "typeorm";
+import { BaseModel } from "./BaseModel";
+import { Role } from "./Role";
+import type { Role as RoleType } from "./Role";
 
-@Entity()
+@Entity({ name: "permissions" })
 export class Permission extends BaseModel {
-    @Column({ length: 36 })
-    uuid!: string;
+  @Column({ length: 36 })
+  uuid!: string;
 
-    @Column({ length: 36 })
-    role_id!: string;
+  @Column()
+  role_id!: string;
 
-    @ManyToOne(() => Role, role => role.permissions)
-    @JoinColumn({ name: 'role_id' })
-    role!: Role;
+  @ManyToOne(() => Role, (role) => role.permissions)
+  @JoinColumn({ name: "role_id" })
+  role!: RoleType;
 
-    @Column({ default: false })
-    status!: boolean;
+  @Column({ default: false })
+  status!: boolean;
 
-    @Column({ length: 255 })
-    name!: string;
+  @Column({ length: 255 })
+  name!: string;
 
-    @Column({ length: 255 })
-    key!: string;
+  @Column({ length: 255 })
+  key!: string;
 
-    @Column({ length: 255 })
-    sub_key!: string;
+  @Column({ length: 255 })
+  sub_key!: string;
 }
