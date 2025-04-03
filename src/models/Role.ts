@@ -5,7 +5,7 @@ import type { User as UserType } from "./User";
 import type { Permission as PermissionType } from "./Permission";
 import { Permission } from "./Permission";
 
-@Entity({ name: "auth_service.roles" })
+@Entity({ name: "roles" })
 export class Role extends BaseModel {
   @Column({ length: 36, nullable: true })
   uuid!: string | null;
