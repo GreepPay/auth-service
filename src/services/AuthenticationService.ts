@@ -99,6 +99,7 @@ export class AuthenticationService {
       newUser.state = data.state;
       newUser.country = data.country;
       newUser.default_currency = data.defaultCurrency;
+      newUser.transaction_pin = data.transactionPin;
 
       const user = await User.create(newUser).save();
 
@@ -122,6 +123,8 @@ export class AuthenticationService {
         existingUser.country = data.country || existingUser.country;
         existingUser.default_currency =
           data.defaultCurrency || existingUser.default_currency;
+        existingUser.transaction_pin =
+          data.transactionPin || existingUser.transaction_pin;
 
         await existingUser.save();
         return existingUser;

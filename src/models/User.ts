@@ -57,6 +57,9 @@ export class User extends BaseModel {
   state?: string;
 
   @Column({ nullable: true })
+  transaction_pin?: string;
+
+  @Column({ nullable: true })
   country?: string;
 
   @Column({ nullable: true })

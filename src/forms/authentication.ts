@@ -16,6 +16,7 @@ export interface CreateUserForm {
   state?: string;
   country?: string;
   defaultCurrency?: string;
+  transactionPin?: string;
 }
 
 export interface UpdateUserProfileForm {
@@ -24,6 +25,7 @@ export interface UpdateUserProfileForm {
   lastName?: string;
   phoneNumber?: string;
   email?: string;
+  transactionPin?: string;
 }
 
 export interface ValidateOtpForm {
