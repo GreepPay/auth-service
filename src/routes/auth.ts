@@ -82,7 +82,7 @@ router.add(
       headers: { "Content-Type": "application/json" },
       status: result.statusCode,
     });
-  },
+  }
 );
 
 /**
@@ -126,7 +126,7 @@ router.add(
       headers: { "Content-Type": "application/json" },
       status: result.statusCode,
     });
-  },
+  }
 );
 
 /**
@@ -174,7 +174,7 @@ router.add(
       headers: { "Content-Type": "application/json" },
       status: result.statusCode,
     });
-  },
+  }
 );
 
 /**
@@ -232,7 +232,7 @@ router.add(
       headers: { "Content-Type": "application/json" },
       status: result.statusCode,
     });
-  },
+  }
 );
 
 /**
@@ -293,13 +293,13 @@ router.add(
   `/${APP_VERSION}/auth/update-password`,
   async (request: BunRequest) => {
     const result = await new AuthenticationController().updateUserPassword(
-      request,
+      request
     );
     return new Response(JSON.stringify(result.body), {
       headers: { "Content-Type": "application/json" },
       status: result.statusCode,
     });
-  },
+  }
 );
 
 /**
@@ -353,13 +353,13 @@ router.add(
   `/${APP_VERSION}/auth/update-profile`,
   async (request: BunRequest) => {
     const result = await new AuthenticationController().updateUserProfile(
-      request,
+      request
     );
     return new Response(JSON.stringify(result.body), {
       headers: { "Content-Type": "application/json" },
       status: result.statusCode,
     });
-  },
+  }
 );
 
 /**
@@ -401,7 +401,7 @@ router.add(
       headers: { "Content-Type": "application/json" },
       status: result.statusCode,
     });
-  },
+  }
 );
 
 /**
@@ -470,7 +470,62 @@ router.add(
       headers: { "Content-Type": "application/json" },
       status: result.statusCode,
     });
-  },
+  }
+);
+
+/**
+ * @swagger
+ * /v1/auth/update-role:
+ *   post:
+ *     tags:
+ *       - Authentication
+ *     summary: Update a user's role
+ *     description: Change the role of a specified user
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userUuid:
+ *                 type: string
+ *                 example: "123e4567-e89b-12d3-a456-426614174000"
+ *               roleName:
+ *                 type: string
+ *                 example: "Admin"
+ *             required:
+ *               - userUuid
+ *               - roleName
+ *     responses:
+ *       200:
+ *         description: Role updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "User role updated successfully"
+ *                 user:
+ *                   $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Invalid input or role not found
+ *       404:
+ *         description: User not found
+ */
+router.add(
+  "POST",
+  `/${APP_VERSION}/auth/update-role`,
+  async (request: BunRequest) => {
+    const result = await new AuthenticationController().updateUserRole(request);
+
+    return new Response(JSON.stringify(result.body), {
+      headers: { "Content-Type": "application/json" },
+      status: result.statusCode,
+    });
+  }
 );
 
 /**

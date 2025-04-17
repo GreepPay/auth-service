@@ -142,7 +142,7 @@ export class AuthenticationService {
    * @returns Promise resolving to token and user object or HTTP response
    */
   async authenticateUser(
-    data: AuthenticateUserForm,
+    data: AuthenticateUserForm
   ): Promise<AuthenticateUserResponse | HttpResponseType> {
     let user: User | null = null;
 
@@ -179,7 +179,7 @@ export class AuthenticationService {
     if (!user) {
       return HttpResponse.failure(
         "User with email does not exist, please Sign Up.",
-        401,
+        401
       );
     }
 
@@ -190,7 +190,7 @@ export class AuthenticationService {
       if (!isValidPassword) {
         return HttpResponse.failure(
           "Credentials do not match our records!",
-          401,
+          401
         );
       }
     } else {
@@ -198,7 +198,7 @@ export class AuthenticationService {
       if (user.sso_id && user.sso_id !== data.sso_id) {
         return HttpResponse.failure(
           "Credentials do not match our records!",
-          401,
+          401
         );
       }
     }
@@ -288,7 +288,7 @@ export class AuthenticationService {
    * @returns Promise resolving to updated User object or HTTP response
    */
   async updateUserProfile(
-    data: UpdateUserProfileForm,
+    data: UpdateUserProfileForm
   ): Promise<User | HttpResponseType> {
     // Step 1: Find and validate user
     const user = await User.findOne({ where: { uuid: data.userUuid } });
@@ -413,5 +413,31 @@ export class AuthenticationService {
     });
 
     return HttpResponse.success("User deleted successfully", 200);
+  }
+
+  /**
+   * Updates the role of a given user
+   * @param userUuid - UUID of the user to update
+   * @param newRoleName - Name of the new role (e.g., 'Admin')
+   * @returns Updated user or HTTP error response
+   */
+  async updateUserRole(
+    userUuid: string,
+    newRoleName: string
+  ): Promise<User | HttpResponseType> {
+    const user = await User.findOne({ where: { uuid: userUuid } });
+    if (!user) {
+      return HttpResponse.failure("User not found", 404);
+    }
+
+    const role = await Role.findOne({ where: { name: newRoleName } });
+    if (!role) {
+      return HttpResponse.failure("Role not found", 400);
+    }
+
+    user.role_id = role.id.toString();
+    await user.save();
+
+    return user;
   }
 }
