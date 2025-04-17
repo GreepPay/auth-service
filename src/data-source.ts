@@ -1,12 +1,9 @@
 import "reflect-metadata";
 import pkg from "typeorm";
 const { DataSource } = pkg;
-// import { User } from './models/User';
-// import { Role } from './models/Role';
-// import { AuthToken } from './models/AuthToken';
-// import { Permission } from './models/Permission';
 import dotenv from "dotenv";
 import fs from "fs";
+import { AuthToken, Permission, Role, User } from "./models";
 
 dotenv.config();
 
@@ -17,7 +14,8 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE,
-  synchronize: true,
+  schema: "auth_service",
+  synchronize: false,
   logging: true,
   ssl:
     process.env.DB_USE_SSL === "true"
@@ -28,7 +26,7 @@ export const AppDataSource = new DataSource({
             .toString(),
         }
       : false,
-  // entities: [User, Role, Permission, AuthToken],
+  entities: [AuthToken, Permission, Role, User],
   subscribers: [],
   migrations: ["src/database/migrations/*.ts"],
 });

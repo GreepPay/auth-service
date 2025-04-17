@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from "uuid";
 import { User } from "../models/User";
 import { hash, compare } from "bcrypt";
 import HttpResponse, { type HttpResponseType } from "../common/HttpResponse";
@@ -52,7 +53,7 @@ export class AuthenticationService {
   }
 
   /**
-   * Creates a new user or updates existing user based on provided data
+   * Creates a new user or updates an existing user based on provided data
    * @param data - User creation form data
    * @returns Promise resolving to User object or HTTP response
    */
@@ -82,17 +83,25 @@ export class AuthenticationService {
     if (!existingUser) {
       // Initialize new user object with provided data
       const newUser = new User();
+      newUser.uuid = uuidv4();
       newUser.first_name = data.firstName;
       newUser.last_name = data.lastName;
       newUser.email = data.email;
       newUser.phone = data.phoneNumber;
       newUser.password = data.password ? await hash(data.password, 10) : "";
+      newUser.password_created_at = new Date();
       newUser.otp = data.otp;
       newUser.otp_expired_at = new Date(Date.now() + 43200 * 60 * 1000); // 30 days
       newUser.role_id = role.id.toString();
       newUser.sso_id = data.ssoId;
 
-      const user = await User.create(newUser);
+      // Set the new fields
+      newUser.state = data.state;
+      newUser.country = data.country;
+      newUser.default_currency = data.defaultCurrency;
+      newUser.transaction_pin = data.transactionPin;
+
+      const user = await User.create(newUser).save();
 
       // Handle SSO verification
       if (data.isSso) {
@@ -108,6 +117,15 @@ export class AuthenticationService {
         existingUser.first_name = data.firstName || existingUser.first_name;
         existingUser.last_name = data.lastName || existingUser.last_name;
         existingUser.otp = data.otp;
+
+        // Update new fields if provided
+        existingUser.state = data.state || existingUser.state;
+        existingUser.country = data.country || existingUser.country;
+        existingUser.default_currency =
+          data.defaultCurrency || existingUser.default_currency;
+        existingUser.transaction_pin =
+          data.transactionPin || existingUser.transaction_pin;
+
         await existingUser.save();
         return existingUser;
       }
@@ -127,31 +145,55 @@ export class AuthenticationService {
    * @returns Promise resolving to token and user object or HTTP response
    */
   async authenticateUser(
-    data: AuthenticateUserForm,
+    data: AuthenticateUserForm
   ): Promise<AuthenticateUserResponse | HttpResponseType> {
-    // Step 1: Find user by email or phone
     let user: User | null = null;
 
     if (this.isNumeric(data.username)) {
-      user = await User.findOne({ where: { phone: data.username } });
+      user = await User.findOne({
+        where: { phone: data.username },
+        select: [
+          "id",
+          "first_name",
+          "last_name",
+          "email",
+          "phone",
+          "password",
+          "sso_id",
+          "uuid",
+        ],
+      });
     } else {
-      user = await User.findOne({ where: { email: data.username } });
+      user = await User.findOne({
+        where: { email: data.username },
+        select: [
+          "id",
+          "first_name",
+          "last_name",
+          "email",
+          "phone",
+          "password",
+          "sso_id",
+          "uuid",
+        ],
+      });
     }
 
     if (!user) {
       return HttpResponse.failure(
         "User with email does not exist, please Sign Up.",
-        401,
+        401
       );
     }
 
     // Step 2: Validate credentials
     if (data.password) {
+      // Compare provided password with stored hashed password
       const isValidPassword = await compare(data.password, user.password);
       if (!isValidPassword) {
         return HttpResponse.failure(
           "Credentials do not match our records!",
-          401,
+          401
         );
       }
     } else {
@@ -159,7 +201,7 @@ export class AuthenticationService {
       if (user.sso_id && user.sso_id !== data.sso_id) {
         return HttpResponse.failure(
           "Credentials do not match our records!",
-          401,
+          401
         );
       }
     }
@@ -175,16 +217,15 @@ export class AuthenticationService {
         order: { created_at: "ASC" },
       });
 
-      // Remove older tokens if limit exceeded
+      // Remove older tokens if limit exceeded (keep the first token, delete the rest)
       if (existingTokens.length >= maxActiveDevices) {
-        // Keep the first token, delete the rest
         for (const oldToken of existingTokens.slice(1)) {
           await AuthToken.delete(oldToken.id);
         }
       }
 
       // Create new auth token
-      await AuthToken.create({
+      AuthToken.create({
         auth_id: user.uuid,
         auth_token: token,
       });
@@ -197,15 +238,15 @@ export class AuthenticationService {
 
   /**
    * Resets user OTP and updates expiration time
-   * @param ResetpasswordForm
+   * @param userUuid - UUID of the user
    * @returns Promise resolving to User object or HTTP response
    */
-  async resetUserOtp(Useruuid: string): Promise<User | HttpResponseType> {
+  async resetUserOtp(userUuid: string): Promise<User | HttpResponseType> {
     // Step 1: Find user by UUID
-    let user = await User.findOne({ where: { uuid: Useruuid } });
+    let user = await User.findOne({ where: { uuid: userUuid } });
 
     if (!user) {
-      user = await User.findOne({ where: { email: Useruuid } });
+      user = await User.findOne({ where: { email: userUuid } });
     }
     if (!user) {
       return HttpResponse.failure("User not found", 400);
@@ -214,7 +255,7 @@ export class AuthenticationService {
     // Step 2: Generate and set new OTP
     const otp = generateOtp();
     user.otp = otp;
-    user.otp_expired_at = new Date(Date.now() + 43200 * 60 * 1000); // 30 days expiration
+    user.otp_expired_at = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes expiration
     await user.save();
 
     return user;
@@ -250,7 +291,7 @@ export class AuthenticationService {
    * @returns Promise resolving to updated User object or HTTP response
    */
   async updateUserProfile(
-    data: UpdateUserProfileForm,
+    data: UpdateUserProfileForm
   ): Promise<User | HttpResponseType> {
     // Step 1: Find and validate user
     const user = await User.findOne({ where: { uuid: data.userUuid } });
@@ -375,5 +416,31 @@ export class AuthenticationService {
     });
 
     return HttpResponse.success("User deleted successfully", 200);
+  }
+
+  /**
+   * Updates the role of a given user
+   * @param userUuid - UUID of the user to update
+   * @param newRoleName - Name of the new role (e.g., 'Admin')
+   * @returns Updated user or HTTP error response
+   */
+  async updateUserRole(
+    userUuid: string,
+    newRoleName: string
+  ): Promise<User | HttpResponseType> {
+    const user = await User.findOne({ where: { uuid: userUuid } });
+    if (!user) {
+      return HttpResponse.failure("User not found", 404);
+    }
+
+    const role = await Role.findOne({ where: { name: newRoleName } });
+    if (!role) {
+      return HttpResponse.failure("Role not found", 400);
+    }
+
+    user.role_id = role.id.toString();
+    await user.save();
+
+    return user;
   }
 }

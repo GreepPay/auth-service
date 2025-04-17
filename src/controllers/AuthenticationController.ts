@@ -41,7 +41,7 @@ export class AuthenticationController {
     let data: AuthenticateUserForm =
       (await request.json()) as AuthenticateUserForm;
     let response = await new AuthenticationService(request).authenticateUser(
-      data,
+      data
     );
 
     if ("token" in response) {
@@ -55,7 +55,7 @@ export class AuthenticationController {
   async resetUserOtp(request: BunRequest) {
     let data: ResetPasswordForm = (await request.json()) as ResetPasswordForm;
     let response = await new AuthenticationService(request).resetUserOtp(
-      data.email,
+      data.email
     );
 
     if (response instanceof User) {
@@ -81,7 +81,7 @@ export class AuthenticationController {
   async updateUserPassword(request: BunRequest) {
     let data: ResetPasswordForm = (await request.json()) as ResetPasswordForm;
     let response = await new AuthenticationService(request).updateUserPassword(
-      data,
+      data
     );
 
     return response;
@@ -92,13 +92,13 @@ export class AuthenticationController {
     let data: UpdateUserProfileForm =
       (await request.json()) as UpdateUserProfileForm;
     let response = await new AuthenticationService(request).updateUserProfile(
-      data,
+      data
     );
 
     if (response instanceof User) {
       return HttpResponse.success(
         "User profile updated successfully",
-        response,
+        response
       );
     }
 
@@ -115,6 +115,25 @@ export class AuthenticationController {
   async deleteUser(request: BunRequest) {
     let userId = request.params.id;
     let response = await new AuthenticationService(request).deleteUser(userId);
+    return response;
+  }
+
+  // Update user's role
+  async updateUserRole(request: BunRequest) {
+    const { userUuid, roleName } = (await request.json()) as {
+      userUuid: string;
+      roleName: string;
+    };
+
+    const response = await new AuthenticationService(request).updateUserRole(
+      userUuid,
+      roleName
+    );
+
+    if (response instanceof User) {
+      return HttpResponse.success("User role updated successfully", response);
+    }
+
     return response;
   }
 }
